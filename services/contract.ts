@@ -1,5 +1,12 @@
-import { launchpadAbi, marketplaceAbi, slasherAbi, tokenAbi } from "./abi";
 import {
+  idrxAbi,
+  launchpadAbi,
+  marketplaceAbi,
+  slasherAbi,
+  tokenAbi,
+} from "./abi";
+import {
+  idrxContract,
   RWALaunchpadContract,
   RWAMarketPlaceContract,
   RWATokenContract,
@@ -24,4 +31,9 @@ export const wagmiContractMarketplaceConfig = {
 export const wagmiContractSlasherConfig = {
   address: slasherContract,
   abi: slasherAbi,
+} as const;
+
+export const wagmiContractIdrxConfig = {
+  address: idrxContract,
+  abi: idrxAbi,
 } as const;
