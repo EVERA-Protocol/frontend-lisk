@@ -88,9 +88,11 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="mx-2 px-4 py-2.5 bg-white font-semibold rounded-lg text-sm text-gray-800">
-          {formatCustomNumber(balanceIdr)} IDRX
-        </div>
+        {address && (
+          <div className="mx-2 px-4 py-2.5 bg-white font-semibold rounded-lg text-sm text-gray-800">
+            {formatCustomNumber(balanceIdr)} IDRX
+          </div>
+        )}
 
         <div className="flex items-center gap-2 ml-auto">
           <AuthConnectButton className="hidden md:flex" />
