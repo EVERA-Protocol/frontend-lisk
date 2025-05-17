@@ -43,8 +43,9 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { TransactionSuccess } from "@/components/transaction-success";
-import { useWaitForTransactionReceipt, useSendTransaction } from "wagmi";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { parseEther } from "viem";
+// import { writeContract } from "wagmi/actions";
 // import { launchpadAbi } from "@/services/abi";
 
 export default function AssetDetailPage() {
@@ -53,15 +54,15 @@ export default function AssetDetailPage() {
   const [buyAmount, setBuyAmount] = useState("");
   const [stakeAmount, setStakeAmount] = useState("");
   const [isStakingSuccess, setIsStakingSuccess] = useState(false);
-  // const { writeContractAsync } = useWriteContract();
-  const { sendTransactionAsync } = useSendTransaction();
+  const { writeContractAsync } = useWriteContract();
+  // const { sendTransactionAsync } = useSendTransaction();
   const [buyTxHash, setBuyTxHash] = useState<`0x${string}` | undefined>();
 
   // In a real app, you would fetch this data from an API
   const asset = mockAssets.find((a) => a.id === id) || mockAssets[0];
 
   // Contract configuration
-  const launchpadAddress = process.env.NEXT_PUBLIC_CONTRACT_RWA_LAUNCHPAD;
+  const launchpadAddress = process.env.NEXT_PUBLIC_CONTRACT_RWA_MARKETPLACE;
 
   // Get token address from launchpad contract
   // const { data: tokenAddress } = useReadContract({
@@ -71,8 +72,64 @@ export default function AssetDetailPage() {
   //   args: [BigInt(Number(id))],
   // });
 
+  // const handleBuy = async () => {
+  //   // Validate input
+  //   if (!buyAmount || Number(buyAmount) <= 0) {
+  //     toast({
+  //       title: "Invalid amount",
+  //       description: "Please enter a valid amount to buy",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   if (!launchpadAddress) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Launchpad address not configured",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     // Convert amount to wei
+  //     const amountInWei = parseEther(buyAmount);
+
+  //     console.log(`Sending ${amountInWei} wei to ${launchpadAddress}`);
+
+  //     // Simple IDRX transfer to launchpad address - no contract function call
+  //     const tx = await sendTransactionAsync({
+  //       to: launchpadAddress as `0x${string}`,
+  //       value: amountInWei,
+  //     });
+
+  //     toast({
+  //       title: "Transaction submitted",
+  //       description: "Your IDRX has been sent",
+  //     });
+
+  //     setBuyTxHash(tx);
+  //   } catch (error) {
+  //     console.error("Buy error:", error);
+
+  //     // More specific error handling
+  //     let errorMessage = "There was an error processing your purchase";
+
+  //     // Check for common errors
+  //     if (error instanceof Error) {
+  //       errorMessage = error.message;
+  //     }
+
+  //     toast({
+  //       title: "Transaction failed",
+  //       description: errorMessage,
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+
   const handleBuy = async () => {
-    // Validate input
     if (!buyAmount || Number(buyAmount) <= 0) {
       toast({
         title: "Invalid amount",
@@ -91,34 +148,50 @@ export default function AssetDetailPage() {
       return;
     }
 
+    if (asset.symbol !== "BART") {
+      toast({
+        title: "Unsupported token",
+        description: "Only BART purchases are supported at the moment",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      // Convert amount to wei
       const amountInWei = parseEther(buyAmount);
 
-      console.log(`Sending ${amountInWei} wei to ${launchpadAddress}`);
+      const tokenAddress = "0x4aAAF8d89d5676Acf1b1Ec0755B92bA24ab24162" as const;
+      const paymentTokenAddress = "0xD63029C1a3dA68b51c67c6D1DeC3DEe50D681661" as const;
 
-      // Simple IDRX transfer to launchpad address - no contract function call
-      const tx = await sendTransactionAsync({
-        to: launchpadAddress as `0x${string}`,
-        value: amountInWei,
+      const txHash = await writeContractAsync({
+        address: launchpadAddress as `0x${string}`,
+        abi: [
+          {
+            inputs: [
+              { internalType: "address", name: "tokenAddress", type: "address" },
+              { internalType: "uint256", name: "amount", type: "uint256" },
+              { internalType: "address", name: "paymentTokenAddress", type: "address" },
+            ],
+            name: "buyTokens",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function",
+          },
+        ],
+        functionName: "buyTokens",
+        args: [tokenAddress, amountInWei, paymentTokenAddress],
       });
 
       toast({
         title: "Transaction submitted",
-        description: "Your IDRX has been sent",
+        description: `Tx Hash: ${txHash}`,
       });
 
-      setBuyTxHash(tx);
+      setBuyTxHash(txHash);
     } catch (error) {
       console.error("Buy error:", error);
-
-      // More specific error handling
       let errorMessage = "There was an error processing your purchase";
-
-      // Check for common errors
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      if (error instanceof Error) errorMessage = error.message;
 
       toast({
         title: "Transaction failed",
@@ -401,8 +474,8 @@ export default function AssetDetailPage() {
                       <span>IDRX  </span>
                       {buyAmount
                         ? (
-                            Number.parseFloat(buyAmount) * asset.priceUsd
-                          ).toFixed(2)
+                          Number.parseFloat(buyAmount) * asset.priceUsd
+                        ).toFixed(2)
                         : "0.00"}
                     </span>
                   </div>
@@ -441,18 +514,18 @@ export default function AssetDetailPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">Total</span>
                         <span className="text-lg font-bold text-white">
-                          IDRX 
+                          IDRX
                           {buyAmount
                             ? (
-                                Number.parseFloat(buyAmount) * asset.priceUsd
-                              ).toFixed(2)
+                              Number.parseFloat(buyAmount) * asset.priceUsd
+                            ).toFixed(2)
                             : "0.00"}
                         </span>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button
-                        onClick={() => {}}
+                        onClick={() => { }}
                         variant="outline"
                         className="border-gray-700"
                       >
@@ -553,11 +626,11 @@ export default function AssetDetailPage() {
                     <span className="font-medium text-white">
                       {stakeAmount
                         ? (
-                            (Number.parseFloat(stakeAmount) *
-                              asset.priceUsd *
-                              asset.annualYield) /
-                            100
-                          ).toFixed(2)
+                          (Number.parseFloat(stakeAmount) *
+                            asset.priceUsd *
+                            asset.annualYield) /
+                          100
+                        ).toFixed(2)
                         : "0.00"}{" "}
                       IDR
                     </span>
@@ -615,12 +688,12 @@ export default function AssetDetailPage() {
                             <span className="text-lg font-bold text-white">
                               {stakeAmount
                                 ? (
-                                    (Number.parseFloat(stakeAmount) *
-                                      asset.priceUsd *
-                                      asset.annualYield) /
-                                    100 /
-                                    12
-                                  ).toFixed(2)
+                                  (Number.parseFloat(stakeAmount) *
+                                    asset.priceUsd *
+                                    asset.annualYield) /
+                                  100 /
+                                  12
+                                ).toFixed(2)
                                 : "0.00"}{" "}
                               IDR
                             </span>
