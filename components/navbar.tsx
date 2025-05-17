@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,7 +8,8 @@ import { Menu, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { AuthConnectButton } from "@/components/AuthConnectButton";
-// import { ModeToggle } from "@/components/mode-toggle"
+import { useAccount, useReadContract } from "wagmi";
+import { formatCustomNumber } from "@/utils/utils";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -17,11 +18,50 @@ const navItems = [
   { label: "Stake", href: "/stake" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Docs", href: "/docs" },
-]
+];
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { address } = useAccount();
+  const [isOpen, setIsOpen] = useState(false);
+  const [balanceIdr, setBalanceIdr] = useState(0);
+
+  const {
+    data: idrxBalance,
+    error,
+    isLoading,
+  } = useReadContract({
+    address: "0xD63029C1a3dA68b51c67c6D1DeC3DEe50D681661",
+    abi: [
+      {
+        inputs: [{ internalType: "address", name: "account", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+        stateMutability: "view",
+        type: "function",
+      },
+    ],
+    functionName: "balanceOf",
+    args: address ? [address as `0x${string}`] : undefined,
+    query: {
+      enabled: !!address,
+      refetchInterval: 10000,
+    },
+  });
+
+  useEffect(() => {
+    if (idrxBalance) {
+      setBalanceIdr(Number(idrxBalance));
+    }
+
+    if (error) {
+      console.log("Error fetching IDRX balance:", error);
+    }
+
+    if (isLoading) {
+      console.log("Fetching IDRX balance...");
+    }
+  }, [idrxBalance, error, isLoading]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-purple-900/20 bg-black/80 backdrop-blur-sm">
@@ -48,11 +88,11 @@ export default function Navbar() {
           ))}
         </nav>
 
+        <div className="mx-2 px-4 py-2.5 bg-white font-semibold rounded-lg text-sm text-gray-800">
+          {formatCustomNumber(balanceIdr)} IDRX
+        </div>
+
         <div className="flex items-center gap-2 ml-auto">
-          {/* <ModeToggle /> */}
-          {/* <Button className="hidden md:flex bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700">
-            Connect Wallet
-          </Button> */}
           <AuthConnectButton className="hidden md:flex" />
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
@@ -102,8 +142,6 @@ export default function Navbar() {
                   </Link>
                 ))}
                 <AuthConnectButton className="mt-4" />
-                {/* Connect Wallet
-                </Button> */}
               </nav>
             </SheetContent>
           </Sheet>

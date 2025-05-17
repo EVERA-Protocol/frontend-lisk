@@ -5,12 +5,19 @@ import { useAccount } from "wagmi";
 
 export const AuthConnectButton = (props: { className?: string }) => {
   const { signInWithXellar } = useAuth();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
 
   useEffect(() => {
+    console.debug("AuthConnectButton mounted, wallet status:", {
+      isConnected,
+      address,
+    });
+
     if (isConnected) {
-      // Attempt to authenticate when wallet is connected
-      signInWithXellar().catch(console.error);
+      console.debug("Wallet connected, triggering signInWithXellar...");
+      signInWithXellar().catch((err) =>
+        console.error("signInWithXellar error:", err)
+      );
     }
   }, [isConnected, signInWithXellar]);
 
