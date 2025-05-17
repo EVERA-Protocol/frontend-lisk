@@ -568,14 +568,130 @@ export const tokenAbi = [
   },
 ];
 
-export const yieldAbi = [
+export const slasherAbi = [
   {
     inputs: [
-      { internalType: "address", name: "_tokenContract", type: "address" },
+      {
+        internalType: "contract IAllocationManager",
+        name: "_allocationManager",
+        type: "address",
+      },
+      {
+        internalType: "contract ISlashingRegistryCoordinator",
+        name: "_slashingRegistryCoordinator",
+        type: "address",
+      },
+      { internalType: "address", name: "_slasher", type: "address" },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
   },
+  { inputs: [], name: "OnlySlasher", type: "error" },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "slashingRequestId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint32",
+        name: "operatorSetId",
+        type: "uint32",
+      },
+      {
+        indexed: false,
+        internalType: "uint256[]",
+        name: "wadsToSlash",
+        type: "uint256[]",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "description",
+        type: "string",
+      },
+    ],
+    name: "OperatorSlashed",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "allocationManager",
+    outputs: [
+      {
+        internalType: "contract IAllocationManager",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: "address", name: "operator", type: "address" },
+          { internalType: "uint32", name: "operatorSetId", type: "uint32" },
+          {
+            internalType: "contract IStrategy[]",
+            name: "strategies",
+            type: "address[]",
+          },
+          { internalType: "uint256[]", name: "wadsToSlash", type: "uint256[]" },
+          { internalType: "string", name: "description", type: "string" },
+        ],
+        internalType: "struct IAllocationManagerTypes.SlashingParams",
+        name: "_slashingParams",
+        type: "tuple",
+      },
+    ],
+    name: "fulfillSlashingRequest",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "nextRequestId",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "slasher",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "slashingRegistryCoordinator",
+    outputs: [
+      {
+        internalType: "contract ISlashingRegistryCoordinator",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+export const marketplaceAbi = [
+  { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   {
     inputs: [{ internalType: "address", name: "owner", type: "address" }],
     name: "OwnableInvalidOwner",
@@ -587,6 +703,44 @@ export const yieldAbi = [
     type: "error",
   },
   { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "recipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "FeeTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "oldPool",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newPool",
+        type: "address",
+      },
+    ],
+    name: "LiquidityPoolUpdated",
+    type: "event",
+  },
   {
     anonymous: false,
     inputs: [
@@ -610,99 +764,29 @@ export const yieldAbi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "Paused",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "totalSupply",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "holdersCount",
-        type: "uint256",
-      },
-    ],
-    name: "SnapshotTaken",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-    ],
-    name: "SnapshotValidated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
-    name: "Unpaused",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "holder",
+        name: "tokenAddress",
         type: "address",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "distributionId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
+        name: "newPricePerToken",
         type: "uint256",
       },
     ],
-    name: "YieldClaimed",
+    name: "PoolPriceUpdated",
     type: "event",
   },
   {
     anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: "string",
-        name: "source",
-        type: "string",
+        indexed: true,
+        internalType: "address",
+        name: "tokenCreator",
+        type: "address",
       },
       {
         indexed: false,
@@ -711,17 +795,17 @@ export const yieldAbi = [
         type: "uint256",
       },
     ],
-    name: "YieldDeposited",
+    name: "RevenueClaimed",
     type: "event",
   },
   {
     anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "distributionId",
-        type: "uint256",
+        indexed: true,
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
       },
       {
         indexed: false,
@@ -729,14 +813,56 @@ export const yieldAbi = [
         name: "amount",
         type: "uint256",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "pricePerToken",
+        type: "uint256",
+      },
     ],
-    name: "YieldDistributionCreated",
+    name: "TokensAddedToPool",
     type: "event",
   },
   {
     anonymous: false,
     inputs: [
-      { indexed: false, internalType: "address", name: "to", type: "address" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "buyer",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "totalPrice",
+        type: "uint256",
+      },
+    ],
+    name: "TokensPurchased",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
       {
         indexed: false,
         internalType: "uint256",
@@ -744,123 +870,57 @@ export const yieldAbi = [
         type: "uint256",
       },
     ],
-    name: "YieldWithdrawn",
+    name: "TokensRemovedFromPool",
     type: "event",
   },
   {
     inputs: [
-      { internalType: "address[]", name: "holders", type: "address[]" },
-      { internalType: "uint256[]", name: "balances", type: "uint256[]" },
+      { internalType: "address", name: "tokenAddress", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
     ],
-    name: "addHoldersToSnapshot",
+    name: "addTokensToPool",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "distributionAmount", type: "uint256" },
+      { internalType: "address", name: "tokenAddress", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
     ],
-    name: "calculateYield",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "distributionId", type: "uint256" },
-    ],
-    name: "claimYield",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "currentDistributionId",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "string", name: "source", type: "string" }],
-    name: "depositYield",
+    name: "buyTokens",
     outputs: [],
     stateMutability: "payable",
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "uint256", name: "distributionId", type: "uint256" },
-    ],
-    name: "distributeYield",
+    inputs: [],
+    name: "claimRevenue",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "distributionCompleted",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "distributions",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "holder", type: "address" }],
-    name: "getClaimableYield",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getSnapshotHolders",
-    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getSnapshotHoldersCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getYieldSourcesCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    inputs: [
+      { internalType: "address", name: "tokenAddress", type: "address" },
+    ],
+    name: "getPoolDetails",
+    outputs: [
+      { internalType: "uint256", name: "totalTokens", type: "uint256" },
+      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
+      { internalType: "bool", name: "active", type: "bool" },
+      { internalType: "address", name: "tokenCreator", type: "address" },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
-      { internalType: "uint256", name: "", type: "uint256" },
-      { internalType: "address", name: "", type: "address" },
+      { internalType: "address", name: "tokenAddress", type: "address" },
     ],
-    name: "hasClaimed",
+    name: "isTokenCreator",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_address", type: "address" }],
-    name: "isInSnapshot",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "lastSnapshotTimestamp",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
@@ -872,26 +932,30 @@ export const yieldAbi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "pause",
-    outputs: [],
-    stateMutability: "nonpayable",
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "pendingRevenue",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [],
-    name: "paused",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "pools",
+    outputs: [
+      { internalType: "uint256", name: "totalTokens", type: "uint256" },
+      { internalType: "uint256", name: "pricePerToken", type: "uint256" },
+      { internalType: "bool", name: "active", type: "bool" },
+      { internalType: "address", name: "tokenCreator", type: "address" },
+    ],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
       { internalType: "address", name: "tokenAddress", type: "address" },
-      { internalType: "address", name: "to", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
     ],
-    name: "recoverERC20",
+    name: "removeTokensFromPool",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -904,64 +968,6 @@ export const yieldAbi = [
     type: "function",
   },
   {
-    inputs: [
-      { internalType: "address", name: "newTokenContract", type: "address" },
-    ],
-    name: "setTokenContract",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "snapshotActive",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "snapshotBalances",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "snapshotHolders",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "takeHolderSnapshot",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "tokenContract",
-    outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "totalSnapshotSupply",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "totalYield",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
     name: "transferOwnership",
     outputs: [],
@@ -969,123 +975,13 @@ export const yieldAbi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "unpause",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "validateSnapshot",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "address payable", name: "to", type: "address" },
-    ],
-    name: "withdrawYieldReserve",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "", type: "uint256" },
-      { internalType: "address", name: "", type: "address" },
-    ],
-    name: "yieldAmounts",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "yieldSources",
-    outputs: [
-      { internalType: "string", name: "name", type: "string" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "uint256", name: "timestamp", type: "uint256" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  { stateMutability: "payable", type: "receive" },
-];
-
-export const yieldFactoryAbi = [
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "yieldSystem",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "timestamp",
-        type: "uint256",
-      },
-    ],
-    name: "YieldSystemCreated",
-    type: "event",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "allYieldSystems",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       { internalType: "address", name: "tokenAddress", type: "address" },
+      { internalType: "uint256", name: "newPricePerToken", type: "uint256" },
     ],
-    name: "createYieldSystem",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "updatePoolPrice",
+    outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getAllYieldSystems",
-    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "tokenAddress", type: "address" },
-    ],
-    name: "getYieldSystem",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getYieldSystemCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "tokenToYieldSystem",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
     type: "function",
   },
 ];

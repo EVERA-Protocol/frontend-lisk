@@ -1,9 +1,9 @@
-import { launchpadAbi, tokenAbi, yieldAbi, yieldFactoryAbi } from "./abi";
+import { launchpadAbi, marketplaceAbi, slasherAbi, tokenAbi } from "./abi";
 import {
   RWALaunchpadContract,
+  RWAMarketPlaceContract,
   RWATokenContract,
-  yieldContract,
-  yieldFactoryContract,
+  slasherContract,
 } from "./contractAddress";
 
 export const wagmiContractLaunchpadConfig = {
@@ -16,12 +16,12 @@ export const wagmiContractTokenConfig = {
   abi: tokenAbi,
 } as const;
 
-export const wagmiContractYieldConfig = {
-  address: yieldContract,
-  abi: yieldAbi,
+export const wagmiContractMarketplaceConfig = {
+  address: RWAMarketPlaceContract,
+  abi: marketplaceAbi,
 } as const;
 
-export const wagmiContractYieldFactoryConfig = {
-  address: yieldFactoryContract,
-  abi: yieldFactoryAbi,
+export const wagmiContractSlasherConfig = {
+  address: slasherContract,
+  abi: slasherAbi,
 } as const;
