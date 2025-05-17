@@ -1,0 +1,298 @@
+// Mock data for portfolio performance chart
+export const mockPortfolioData = {
+  "1d": {
+    labels: ["9AM", "12PM", "3PM", "6PM", "Now"],
+    values: [10250, 10280, 10310, 10290, 10320],
+  },
+  "1w": {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    values: [10100, 10150, 10200, 10180, 10250, 10290, 10320],
+  },
+  "1m": {
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+    values: [9800, 10050, 10200, 10320],
+  },
+  "1y": {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    values: [
+      8200, 8400, 8600, 8900, 9200, 9500, 9700, 9900, 10100, 10200, 10250,
+      10320,
+    ],
+  },
+  all: {
+    labels: ["2020", "2021", "2022", "2023", "2024"],
+    values: [5000, 6500, 7800, 9200, 10320],
+  },
+};
+
+// Mock data for transaction volume chart
+export const mockTransactionData = {
+  "1d": {
+    labels: ["9AM", "12PM", "3PM", "6PM", "Now"],
+    buy: [0, 500, 0, 200, 0],
+    sell: [0, 0, 300, 0, 0],
+    stake: [0, 0, 0, 0, 150],
+  },
+  "1w": {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    buy: [0, 500, 0, 200, 0, 300, 0],
+    sell: [200, 0, 300, 0, 0, 0, 0],
+    stake: [0, 0, 0, 150, 0, 0, 200],
+  },
+  "1m": {
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+    buy: [700, 500, 800, 300],
+    sell: [200, 300, 0, 0],
+    stake: [0, 150, 200, 350],
+  },
+  "1y": {
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+    buy: [500, 300, 600, 400, 700, 500, 800, 600, 900, 700, 500, 300],
+    sell: [200, 0, 300, 0, 400, 0, 500, 0, 600, 0, 300, 0],
+    stake: [0, 150, 0, 200, 0, 250, 0, 300, 0, 350, 0, 400],
+  },
+  all: {
+    labels: ["2020", "2021", "2022", "2023", "2024"],
+    buy: [1500, 2500, 3500, 4500, 2700],
+    sell: [500, 1000, 1500, 2000, 800],
+    stake: [0, 500, 1000, 1500, 1100],
+  },
+};
+
+// Mock data for market comparison chart
+export const mockMarketComparisonData = {
+  "1d": {
+    market: {
+      labels: [
+        "9AM",
+        "10AM",
+        "11AM",
+        "12PM",
+        "1PM",
+        "2PM",
+        "3PM",
+        "4PM",
+        "5PM",
+        "Now",
+      ],
+      portfolio: [0, 0.2, 0.4, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7, 0.8],
+      benchmark: [0, 0.1, 0.2, 0.3, 0.2, 0.3, 0.4, 0.3, 0.4, 0.5],
+    },
+    realestate: {
+      labels: [
+        "9AM",
+        "10AM",
+        "11AM",
+        "12PM",
+        "1PM",
+        "2PM",
+        "3PM",
+        "4PM",
+        "5PM",
+        "Now",
+      ],
+      portfolio: [0, 0.2, 0.4, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7, 0.8],
+      benchmark: [0, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7, 0.6, 0.8, 0.9],
+    },
+    energy: {
+      labels: [
+        "9AM",
+        "10AM",
+        "11AM",
+        "12PM",
+        "1PM",
+        "2PM",
+        "3PM",
+        "4PM",
+        "5PM",
+        "Now",
+      ],
+      portfolio: [0, 0.2, 0.4, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7, 0.8],
+      benchmark: [0, 0.1, 0.0, -0.1, 0.1, 0.2, 0.3, 0.2, 0.3, 0.4],
+    },
+    infrastructure: {
+      labels: [
+        "9AM",
+        "10AM",
+        "11AM",
+        "12PM",
+        "1PM",
+        "2PM",
+        "3PM",
+        "4PM",
+        "5PM",
+        "Now",
+      ],
+      portfolio: [0, 0.2, 0.4, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7, 0.8],
+      benchmark: [0, 0.2, 0.3, 0.4, 0.3, 0.4, 0.5, 0.4, 0.5, 0.6],
+    },
+  },
+  "1m": {
+    market: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      portfolio: [2.5, 4.8, 6.2, 8.5],
+      benchmark: [1.8, 3.2, 4.5, 6.2],
+    },
+    realestate: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      portfolio: [2.5, 4.8, 6.2, 8.5],
+      benchmark: [3.0, 5.5, 7.0, 9.2],
+    },
+    energy: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      portfolio: [2.5, 4.8, 6.2, 8.5],
+      benchmark: [1.2, 2.5, 3.8, 5.0],
+    },
+    infrastructure: {
+      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      portfolio: [2.5, 4.8, 6.2, 8.5],
+      benchmark: [2.2, 4.0, 5.5, 7.2],
+    },
+  },
+  "1y": {
+    market: {
+      labels: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      portfolio: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+      benchmark: [1.5, 3, 4.5, 6, 7.5, 9, 10.5, 12, 13.5, 15, 16.5, 18],
+    },
+    realestate: {
+      labels: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      portfolio: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+      benchmark: [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30],
+    },
+    energy: {
+      labels: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      portfolio: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+      benchmark: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    },
+    infrastructure: {
+      labels: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+      portfolio: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+      benchmark: [
+        1.8, 3.6, 5.4, 7.2, 9, 10.8, 12.6, 14.4, 16.2, 18, 19.8, 21.6,
+      ],
+    },
+  },
+  "1w": {
+    market: {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      portfolio: [0.5, 1.2, 1.8, 1.5, 2.0, 2.2, 2.5],
+      benchmark: [0.3, 0.8, 1.2, 1.0, 1.5, 1.7, 1.8],
+    },
+    realestate: {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      portfolio: [0.5, 1.2, 1.8, 1.5, 2.0, 2.2, 2.5],
+      benchmark: [0.6, 1.4, 2.0, 1.7, 2.2, 2.4, 2.7],
+    },
+    energy: {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      portfolio: [0.5, 1.2, 1.8, 1.5, 2.0, 2.2, 2.5],
+      benchmark: [0.2, 0.6, 1.0, 0.8, 1.2, 1.4, 1.6],
+    },
+    infrastructure: {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      portfolio: [0.5, 1.2, 1.8, 1.5, 2.0, 2.2, 2.5],
+      benchmark: [0.4, 1.0, 1.6, 1.3, 1.8, 2.0, 2.3],
+    },
+  },
+  all: {
+    market: {
+      labels: ["2020", "2021", "2022", "2023", "2024"],
+      portfolio: [5, 10, 15, 20, 25],
+      benchmark: [4, 8, 12, 16, 20],
+    },
+    realestate: {
+      labels: ["2020", "2021", "2022", "2023", "2024"],
+      portfolio: [5, 10, 15, 20, 25],
+      benchmark: [6, 12, 18, 24, 30],
+    },
+    energy: {
+      labels: ["2020", "2021", "2022", "2023", "2024"],
+      portfolio: [5, 10, 15, 20, 25],
+      benchmark: [3, 6, 9, 12, 15],
+    },
+    infrastructure: {
+      labels: ["2020", "2021", "2022", "2023", "2024"],
+      portfolio: [5, 10, 15, 20, 25],
+      benchmark: [4.5, 9, 13.5, 18, 22.5],
+    },
+  },
+};
