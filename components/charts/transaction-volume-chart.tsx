@@ -87,7 +87,7 @@ export function TransactionVolumeChart({ timeframe, transactionType, className }
             ctx.lineWidth = 0.5
             ctx.stroke()
 
-            ctx.fillText(`IDR ${value.toFixed(0)}`, chartLeft - 10, y)
+            ctx.fillText(`IDRX ${value.toFixed(0)}`, chartLeft - 10, y)
         }
 
         // Draw bars

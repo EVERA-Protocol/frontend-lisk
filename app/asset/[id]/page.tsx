@@ -242,7 +242,7 @@ export default function AssetDetailPage() {
                         Price per Token
                       </div>
                       <div className="text-lg font-medium text-white">
-                        IDR {asset.priceUsd.toFixed(2)}
+                        IDRX {asset.priceUsd.toFixed(2)}
                       </div>
                     </div>
                     <div className="rounded-lg border border-gray-800 p-4">
@@ -321,7 +321,7 @@ export default function AssetDetailPage() {
                       </div>
                       <div className="text-right">
                         <div className="font-medium text-white">
-                          IDR
+                          IDRX
                           {(staker.amount * asset.priceUsd).toLocaleString(
                             undefined,
                             { maximumFractionDigits: 2 }
@@ -353,7 +353,7 @@ export default function AssetDetailPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">Price per Token</span>
                   <span className="font-medium text-white">
-                    IDR{asset.priceUsd.toFixed(2)}
+                    IDRX{asset.priceUsd.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ export default function AssetDetailPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-300">Total</span>
                     <span className="font-medium text-white">
-                      IDR
+                      IDRX
                       {buyAmount
                         ? (
                             Number.parseFloat(buyAmount) * asset.priceUsd
@@ -434,14 +434,14 @@ export default function AssetDetailPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">Price per Token</span>
                         <span className="font-medium text-white">
-                          IDR {asset.priceUsd.toFixed(2)}
+                          IDRX {asset.priceUsd.toFixed(2)}
                         </span>
                       </div>
                       <Separator className="my-2" />
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">Total</span>
                         <span className="text-lg font-bold text-white">
-                          IDR 
+                          IDRX 
                           {buyAmount
                             ? (
                                 Number.parseFloat(buyAmount) * asset.priceUsd

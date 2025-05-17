@@ -34,7 +34,7 @@ export function AssetCard({ asset }: AssetCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-gray-400">Price</div>
-            <div className="text-lg font-medium text-white">IDR {asset.priceUsd.toFixed(2)}</div>
+            <div className="text-lg font-medium text-white">IDRX {asset.priceUsd.toFixed(2)}</div>
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400">Yield</div>

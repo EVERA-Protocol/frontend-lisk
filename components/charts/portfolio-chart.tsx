@@ -84,9 +84,9 @@ export function PortfolioChart({ timeframe, className }: PortfolioChartProps) {
         ctx.fillStyle = "#9ca3af"
         ctx.font = "12px Inter, sans-serif"
         ctx.textAlign = "left"
-        ctx.fillText(`IDR ${min.toFixed(2)}`, 5, height - 5)
+        ctx.fillText(`IDRX ${min.toFixed(2)}`, 5, height - 5)
         ctx.textAlign = "right"
-        ctx.fillText(`IDR ${max.toFixed(2)}`, width - 5, 15)
+        ctx.fillText(`IDRX ${max.toFixed(2)}`, width - 5, 15)
 
         // Draw timeframe labels
         ctx.textAlign = "left"

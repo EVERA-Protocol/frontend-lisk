@@ -24,7 +24,7 @@ export function PerformanceMetrics() {
         },
         {
             title: "Realized Gains",
-            value: "IDR 1,245.32",
+            value: "IDRX 1,245.32",
             change: "-3.2%",
             period: "30d",
             isPositive: false,
