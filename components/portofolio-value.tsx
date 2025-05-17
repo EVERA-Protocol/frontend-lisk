@@ -37,7 +37,7 @@ export function PortfolioValue() {
             <div>
                 <div className="text-sm text-gray-400">Total Value</div>
                 <div className="text-2xl font-bold text-white">
-                    ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    IDR {totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </div>
                 <div
                     className={`flex items-center text-sm ${currentPerformance.isPositive ? "text-green-400" : "text-red-400"}`}
@@ -56,7 +56,7 @@ export function PortfolioValue() {
                 <div>
                     <div className="text-xs text-gray-400">Staked Value</div>
                     <div className="text-sm font-medium text-white">
-                        ${stakedValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        IDR {stakedValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                     </div>
                 </div>
                 <div className="flex items-center text-xs text-green-400">

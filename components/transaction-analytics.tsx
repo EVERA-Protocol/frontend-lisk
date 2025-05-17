@@ -68,15 +68,15 @@ export function TransactionAnalytics() {
                         </div>
                         <div className="rounded-lg border border-gray-800 p-3">
                             <p className="text-sm text-gray-400">Buy Volume</p>
-                            <p className="text-xl font-bold text-white">$12,450</p>
+                            <p className="text-xl font-bold text-white">IDR 12,450</p>
                         </div>
                         <div className="rounded-lg border border-gray-800 p-3">
                             <p className="text-sm text-gray-400">Sell Volume</p>
-                            <p className="text-xl font-bold text-white">$3,280</p>
+                            <p className="text-xl font-bold text-white">IDR 3,280</p>
                         </div>
                         <div className="rounded-lg border border-gray-800 p-3">
                             <p className="text-sm text-gray-400">Avg. Transaction</p>
-                            <p className="text-xl font-bold text-white">$489</p>
+                            <p className="text-xl font-bold text-white">IDR 489</p>
                         </div>
                     </div>
                 </CardContent>

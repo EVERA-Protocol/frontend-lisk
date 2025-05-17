@@ -52,7 +52,7 @@ export function StakingRewards() {
             setIsClaimingSuccess(false)
             toast({
                 title: "Rewards Claimed Successfully!",
-                description: `You have claimed ${totalClaimableRewards.toFixed(2)} tokens worth $${totalRewardsValue.toFixed(2)}`,
+                description: `You have claimed ${totalClaimableRewards.toFixed(2)} tokens worth IDR ${totalRewardsValue.toFixed(2)}`,
             })
         }, 3000)
     }
@@ -62,7 +62,7 @@ export function StakingRewards() {
             <div>
                 <div className="text-sm text-gray-400">Claimable Rewards</div>
                 <div className="text-2xl font-bold text-white">
-                    ${totalRewardsValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    IDR {totalRewardsValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </div>
                 <div className="text-sm text-gray-400">
                     {totalClaimableRewards.toFixed(2)} tokens across {mockUserData.stakedAssets.length} assets
@@ -100,7 +100,7 @@ export function StakingRewards() {
                     {isClaimingSuccess ? (
                         <TransactionSuccess
                             message="Rewards Claimed Successfully!"
-                            subMessage={`You have claimed ${totalClaimableRewards.toFixed(2)} tokens worth $${totalRewardsValue.toFixed(2)}`}
+                            subMessage={`You have claimed ${totalClaimableRewards.toFixed(2)} tokens worth IDR ${totalRewardsValue.toFixed(2)}`}
                             onComplete={() => setIsClaimingSuccess(false)}
                         />
                     ) : (
@@ -118,7 +118,7 @@ export function StakingRewards() {
                                     <div className="flex items-center justify-between">
                                         <span className="text-gray-300">Value</span>
                                         <span className="font-medium text-white">
-                                            ${totalRewardsValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                            IDR {totalRewardsValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@ export function StakingRewards() {
                                                 <div className="flex items-center gap-1">
                                                     <span>{staked.claimableRewards.toFixed(2)}</span>
                                                     <span className="text-gray-400">
-                                                        (${(staked.claimableRewards * asset.priceUsd).toFixed(2)})
+                                                        (IDR {(staked.claimableRewards * asset.priceUsd).toFixed(2)})
                                                     </span>
                                                 </div>
                                             </div>

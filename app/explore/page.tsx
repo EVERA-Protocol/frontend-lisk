@@ -102,8 +102,8 @@ export default function ExplorePage() {
                     className="py-4"
                   />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">${priceRange[0]}</span>
-                    <span className="text-sm text-gray-400">${priceRange[1]}</span>
+                    <span className="text-sm text-gray-400">IDR {priceRange[0]}</span>
+                    <span className="text-sm text-gray-400">IDR {priceRange[1]}</span>
                   </div>
                 </div>
 

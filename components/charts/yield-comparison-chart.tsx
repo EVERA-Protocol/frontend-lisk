@@ -121,7 +121,7 @@ export function YieldComparisonChart({ className }: YieldComparisonChartProps) {
             ctx.fillStyle = "#9ca3af"
             ctx.font = "10px Inter, sans-serif"
             ctx.fillText(
-                `$${asset.stakedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                `IDR ${asset.stakedValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
                 x + barWidth / 2,
                 chartBottom + 30,
             )

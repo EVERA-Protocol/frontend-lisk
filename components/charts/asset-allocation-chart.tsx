@@ -117,7 +117,7 @@ export function AssetAllocationChart({ className }: AssetAllocationChartProps) {
         ctx.font = "bold 16px Inter, sans-serif"
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
-        ctx.fillText(`$${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, centerX, centerY - 10)
+        ctx.fillText(`IDR ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, centerX, centerY - 10)
 
         ctx.font = "12px Inter, sans-serif"
         ctx.fillStyle = "#9ca3af"

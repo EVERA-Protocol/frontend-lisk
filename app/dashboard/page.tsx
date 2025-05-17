@@ -216,7 +216,7 @@ export default function DashboardPage() {
                                                             {asset.ownedAmount.toLocaleString()} {asset.symbol}
                                                         </div>
                                                         <div className="text-sm text-gray-400 mt-1">
-                                                            $
+                                                            IDR 
                                                             {(asset.ownedAmount * asset.priceUsd).toLocaleString(undefined, {
                                                                 maximumFractionDigits: 2,
                                                             })}
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                                                         <span className="text-sm font-medium text-white">
                                                             {asset.claimableRewards.toFixed(2)} {asset.symbol}
                                                             <span className="text-gray-400 ml-1">
-                                                                (${(asset.claimableRewards * asset.priceUsd).toFixed(2)})
+                                                                (IDR {(asset.claimableRewards * asset.priceUsd).toFixed(2)})
                                                             </span>
                                                         </span>
                                                     </div>
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                                                                 {isClaimingSuccess ? (
                                                                     <TransactionSuccess
                                                                         message="Rewards Claimed Successfully!"
-                                                                        subMessage={`You have claimed ${asset.claimableRewards.toFixed(2)} ${asset.symbol} tokens worth $${(asset.claimableRewards * asset.priceUsd).toFixed(2)}`}
+                                                                        subMessage={`You have claimed ${asset.claimableRewards.toFixed(2)} ${asset.symbol} tokens worth IDR ${(asset.claimableRewards * asset.priceUsd).toFixed(2)}`}
                                                                         onComplete={() => setIsClaimingSuccess(false)}
                                                                     />
                                                                 ) : (
@@ -361,7 +361,7 @@ export default function DashboardPage() {
                                                                                 <div className="flex items-center justify-between">
                                                                                     <span className="text-gray-300">Value</span>
                                                                                     <span className="font-medium text-white">
-                                                                                        ${(asset.claimableRewards * asset.priceUsd).toFixed(2)}
+                                                                                        IDR {(asset.claimableRewards * asset.priceUsd).toFixed(2)}
                                                                                     </span>
                                                                                 </div>
                                                                             </div>
