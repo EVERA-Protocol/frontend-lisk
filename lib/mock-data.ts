@@ -40,7 +40,7 @@ export const mockAssets: Asset[] = [
     priceUsd: 5.75,
     annualYield: 7.2,
     createdAt: "2024-01-10",
-    blockchain: "Polygon",
+    blockchain: "Lisk",
     contractAddress: "0x2345678901abcdef2345678901abcdef23456789",
     documents: [
       { name: "Investment Prospectus.pdf", date: "2023-12-15" },
@@ -92,7 +92,7 @@ export const mockAssets: Asset[] = [
     priceUsd: 1.2,
     annualYield: 9.5,
     createdAt: "2024-02-20",
-    blockchain: "Polygon",
+    blockchain: "Lisk",
     contractAddress: "0x4567890123abcdef4567890123abcdef45678901",
     documents: [
       { name: "SME Selection Criteria.pdf", date: "2024-01-25" },
@@ -144,7 +144,7 @@ export const mockAssets: Asset[] = [
     priceUsd: 25.5,
     annualYield: 5.5,
     createdAt: "2024-03-15",
-    blockchain: "Polygon",
+    blockchain: "Lisk",
     contractAddress: "0x6789012345abcdef6789012345abcdef67890123",
     documents: [
       { name: "Authenticity Certificate.pdf", date: "2024-02-20" },

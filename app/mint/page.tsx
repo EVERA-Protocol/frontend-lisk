@@ -244,14 +244,14 @@ export default function MintPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="pricePerRWA">Price per RWA (USD)</Label>
+                    <Label htmlFor="pricePerRWA">Price per RWA (IDR)</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Info className="h-4 w-4 text-gray-500" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="w-80">Initial price per token in USD</p>
+                          <p className="w-80">Initial price per token in IDR</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

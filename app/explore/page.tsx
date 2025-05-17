@@ -92,7 +92,7 @@ export default function ExplorePage() {
               </SheetHeader>
               <div className="mt-6 space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Price Range (USD)</h3>
+                  <h3 className="text-sm font-medium">Price Range (IDR)</h3>
                   <Slider
                     defaultValue={[0, 100]}
                     max={100}

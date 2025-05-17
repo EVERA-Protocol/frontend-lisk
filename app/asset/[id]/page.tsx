@@ -97,7 +97,7 @@ export default function AssetDetailPage() {
 
       console.log(`Sending ${amountInWei} wei to ${launchpadAddress}`);
 
-      // Simple ETH transfer to launchpad address - no contract function call
+      // Simple IDRX transfer to launchpad address - no contract function call
       const tx = await sendTransactionAsync({
         to: launchpadAddress as `0x${string}`,
         value: amountInWei,
@@ -105,7 +105,7 @@ export default function AssetDetailPage() {
 
       toast({
         title: "Transaction submitted",
-        description: "Your ETH has been sent",
+        description: "Your IDRX has been sent",
       });
 
       setBuyTxHash(tx);
@@ -315,7 +315,7 @@ export default function AssetDetailPage() {
                             {staker.address.slice(-4)}
                           </div>
                           <div className="text-sm text-gray-400">
-                            {staker.amount.toLocaleString()} ETH
+                            {staker.amount.toLocaleString()} IDRX
                           </div>
                         </div>
                       </div>
@@ -353,7 +353,7 @@ export default function AssetDetailPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">Price per Token</span>
                   <span className="font-medium text-white">
-                    IDRX{asset.priceUsd.toFixed(2)}
+                    IDRX {asset.priceUsd.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -389,7 +389,7 @@ export default function AssetDetailPage() {
                       className="pr-16 border-purple-800 bg-black/60 text-white"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <span className="text-sm text-gray-400">ETH</span>
+                      <span className="text-sm text-gray-400">{asset.symbol}</span>
                     </div>
                   </div>
                 </div>
@@ -398,7 +398,7 @@ export default function AssetDetailPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-300">Total</span>
                     <span className="font-medium text-white">
-                      IDRX
+                      <span>IDRX  </span>
                       {buyAmount
                         ? (
                             Number.parseFloat(buyAmount) * asset.priceUsd
@@ -540,7 +540,7 @@ export default function AssetDetailPage() {
                       className="pr-16 border-cyan-800 bg-black/60 text-white"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <span className="text-sm text-gray-400">ETH</span>
+                      <span className="text-sm text-gray-400">{asset.symbol} </span>
                     </div>
                   </div>
                 </div>
@@ -559,7 +559,7 @@ export default function AssetDetailPage() {
                             100
                           ).toFixed(2)
                         : "0.00"}{" "}
-                      USD
+                      IDR
                     </span>
                   </div>
                 </div>
@@ -622,7 +622,7 @@ export default function AssetDetailPage() {
                                     12
                                   ).toFixed(2)
                                 : "0.00"}{" "}
-                              USD
+                              IDR
                             </span>
                           </div>
                         </div>
