@@ -874,6 +874,13 @@ export const marketplaceAbi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "PAYMENT_TOKEN_ADDRESS",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       { internalType: "address", name: "tokenAddress", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
@@ -888,10 +895,11 @@ export const marketplaceAbi = [
     inputs: [
       { internalType: "address", name: "tokenAddress", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "address", name: "paymentTokenAddress", type: "address" },
     ],
     name: "buyTokens",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -970,6 +978,19 @@ export const marketplaceAbi = [
   {
     inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newPaymentTokenAddress",
+        type: "address",
+      },
+    ],
+    name: "updatePaymentToken",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
