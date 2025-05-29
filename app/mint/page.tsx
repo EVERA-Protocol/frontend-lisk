@@ -13,16 +13,18 @@ import { FileUpload } from "@/components/file-upload"
 import { ArrowRight, ExternalLink, Info, Loader2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
-import { useAccount, useWriteContract } from "wagmi"
+import { useAccount, useWriteContract, usePublicClient } from "wagmi"
 import { wagmiContractLaunchpadConfig } from "@/services/contract"
 import { RWALaunchpadContract } from "@/services/contractAddress"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { TransactionSuccess } from "@/components/transaction-success"
+import { parseEventLogs } from "viem"
 
 export default function MintPage() {
   const { toast } = useToast()
   const { isConnected } = useAccount()
   const { writeContractAsync, isPending } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -48,6 +50,7 @@ export default function MintPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [assetId, setAssetId] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -62,9 +65,132 @@ export default function MintPage() {
     setFormData((prev) => ({ ...prev, supportingImage: file }))
   }
 
-  const executeContract = async (config: any) => {
+  const executeContract = async (config: any, docsUrl?: string, imgUrl?: string) => {
     try {
-      await writeContractAsync(config);
+      const txHash = await writeContractAsync(config);
+      
+      // Step 1: Save to backend with pending contract address
+      let savedAssetId: string | null = null;
+      try {
+        const response = await fetch('http://localhost:8080/api/assets/mint', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            symbol: formData.symbol,
+            institutionName: formData.institutionName,
+            institutionAddress: formData.institutionAddress,
+            description: formData.description,
+            totalSupply: formData.totalSupply,
+            pricePerRWA: formData.pricePerRWA,
+            contractAddress: "pending", // Will be updated after parsing events
+            txHash: txHash || "pending",
+            documentsURI: docsUrl || "",
+            imageURI: imgUrl || ""
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          savedAssetId = data.data.id;
+          setAssetId(savedAssetId);
+          console.log('Asset saved to backend with ID:', savedAssetId);
+        } else {
+          console.error('Failed to save asset to backend');
+          throw new Error('Backend save failed');
+        }
+      } catch (backendError) {
+        console.error('Backend API error:', backendError);
+        toast({
+          title: "Warning: Transaction succeeded but asset not saved",
+          description: "The blockchain transaction succeeded, but we couldn't save to our database.",
+          variant: "destructive",
+        });
+        setShowSuccessModal(true);
+        return;
+      }
+
+      // Step 2: Wait for transaction receipt and parse events
+      if (publicClient && txHash && savedAssetId) {
+        try {
+          toast({
+            title: "Transaction submitted! 🚀",
+            description: "Waiting for confirmation and parsing contract address...",
+            variant: "default",
+          });
+
+          const receipt = await publicClient.waitForTransactionReceipt({ 
+            hash: txHash as `0x${string}` 
+          });
+
+          // Parse the RWATokenCreated event
+          const logs = parseEventLogs({
+            abi: wagmiContractLaunchpadConfig.abi,
+            eventName: 'RWATokenCreated',
+            logs: receipt.logs,
+          });
+
+          if (logs && logs.length > 0) {
+            const event = logs[0];
+            // Type assertion for the event args
+            const tokenAddress = (event as any).args?.tokenAddress;
+            
+            if (tokenAddress) {
+              // Step 3: Update backend with real contract address
+              const updateResponse = await fetch(`http://localhost:8080/api/assets/${savedAssetId}/contract`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  contractAddress: tokenAddress,
+                  txHash: txHash
+                })
+              });
+
+              if (updateResponse.ok) {
+                console.log('Contract address updated successfully:', tokenAddress);
+                toast({
+                  title: "Asset minted successfully! 🎉",
+                  description: `Token contract deployed at ${tokenAddress.slice(0, 10)}...`,
+                  variant: "default",
+                });
+              } else {
+                console.error('Failed to update contract address');
+                toast({
+                  title: "Warning: Contract address not updated",
+                  description: "Asset was saved but contract address is still pending.",
+                  variant: "destructive",
+                });
+              }
+            } else {
+              console.error('Token address not found in event logs');
+              toast({
+                title: "Warning: Contract address not found",
+                description: "Asset was saved but contract address could not be parsed.",
+                variant: "destructive",
+              });
+            }
+          } else {
+            console.error('RWATokenCreated event not found in transaction logs');
+            toast({
+              title: "Warning: Event not found",
+              description: "Asset was saved but event parsing failed.",
+              variant: "destructive",
+            });
+          }
+        } catch (eventParsingError) {
+          console.error('Error parsing transaction events:', eventParsingError);
+          toast({
+            title: "Warning: Event parsing failed",
+            description: "Asset was saved but we couldn't parse the contract address.",
+            variant: "destructive",
+          });
+        }
+      }
+      
       setShowSuccessModal(true)
     } catch (error: any) {
       console.error("Error creating RWA token:", error)
@@ -108,7 +234,7 @@ export default function MintPage() {
       ...wagmiContractLaunchpadConfig,
       functionName: 'createRWAToken',
       args: [formData.name, formData.symbol, formData.institutionName, formData.institutionAddress, docsUrl, imgUrl, BigInt(formData.totalSupply), BigInt(formData.pricePerRWA), formData.description],
-    })
+    }, docsUrl, imgUrl)
 
     // Simulate successful submission
     toast({

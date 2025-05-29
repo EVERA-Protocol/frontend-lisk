@@ -21,9 +21,9 @@ import {
   FileText,
   Info,
   Shield,
+  Loader2,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { mockAssets } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -45,8 +45,48 @@ import { useParams } from "next/navigation";
 import { TransactionSuccess } from "@/components/transaction-success";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { parseEther } from "viem";
-// import { writeContract } from "wagmi/actions";
-// import { launchpadAbi } from "@/services/abi";
+
+// Asset type to match backend response
+interface Asset {
+  id: string;
+  name: string;
+  symbol: string;
+  type: string;
+  institution: string;
+  institutionAddress: string;
+  description: string;
+  totalSupply: number;
+  stakedAmount: number;
+  priceUsd: number;
+  annualYield: number;
+  createdAt: string;
+  updatedAt: string;
+  blockchain: string;
+  contractAddress: string;
+  txHash: string;
+  documentsURI: string;
+  imageURI: string;
+  documents: Array<{
+    name: string;
+    date: string;
+    url: string;
+  }>;
+  topStakers: Array<{
+    address: string;
+    amount: number;
+    percentage: number;
+  }>;
+  // Computed fields from backend
+  availableSupply: number;
+  marketCap: number;
+  minInvestment: number;
+  maxInvestment: number;
+  stakingProgress: number;
+  isContractActive: boolean;
+  totalValue: number;
+  stakedValue: number;
+  availableValue: number;
+}
 
 export default function AssetDetailPage() {
   const { id } = useParams();
@@ -54,82 +94,56 @@ export default function AssetDetailPage() {
   const [buyAmount, setBuyAmount] = useState("");
   const [stakeAmount, setStakeAmount] = useState("");
   const [isStakingSuccess, setIsStakingSuccess] = useState(false);
+  const [asset, setAsset] = useState<Asset | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { writeContractAsync } = useWriteContract();
-  // const { sendTransactionAsync } = useSendTransaction();
   const [buyTxHash, setBuyTxHash] = useState<`0x${string}` | undefined>();
 
-  // In a real app, you would fetch this data from an API
-  const asset = mockAssets.find((a) => a.id === id) || mockAssets[0];
+  // Fetch asset data from API
+  useEffect(() => {
+    const fetchAsset = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(`http://localhost:8080/api/assets/${id}`);
+        
+        if (!response.ok) {
+          throw new Error(`Asset not found (${response.status})`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          setAsset(data.data);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (err) {
+        console.error('Error fetching asset:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch asset');
+        toast({
+          title: "Error loading asset",
+          description: "Could not load asset details. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAsset();
+  }, [id, toast]);
 
   // Contract configuration
   const launchpadAddress = process.env.NEXT_PUBLIC_CONTRACT_RWA_MARKETPLACE;
 
-  // Get token address from launchpad contract
-  // const { data: tokenAddress } = useReadContract({
-  //   address: launchpadAddress as `0x${string}`,
-  //   abi: launchpadAbi,
-  //   functionName: "getRWATokenAtIndex",
-  //   args: [BigInt(Number(id))],
-  // });
-
-  // const handleBuy = async () => {
-  //   // Validate input
-  //   if (!buyAmount || Number(buyAmount) <= 0) {
-  //     toast({
-  //       title: "Invalid amount",
-  //       description: "Please enter a valid amount to buy",
-  //       variant: "destructive",
-  //     });
-  //     return;
-  //   }
-
-  //   if (!launchpadAddress) {
-  //     toast({
-  //       title: "Error",
-  //       description: "Launchpad address not configured",
-  //       variant: "destructive",
-  //     });
-  //     return;
-  //   }
-
-  //   try {
-  //     // Convert amount to wei
-  //     const amountInWei = parseEther(buyAmount);
-
-  //     console.log(`Sending ${amountInWei} wei to ${launchpadAddress}`);
-
-  //     // Simple IDRX transfer to launchpad address - no contract function call
-  //     const tx = await sendTransactionAsync({
-  //       to: launchpadAddress as `0x${string}`,
-  //       value: amountInWei,
-  //     });
-
-  //     toast({
-  //       title: "Transaction submitted",
-  //       description: "Your IDRX has been sent",
-  //     });
-
-  //     setBuyTxHash(tx);
-  //   } catch (error) {
-  //     console.error("Buy error:", error);
-
-  //     // More specific error handling
-  //     let errorMessage = "There was an error processing your purchase";
-
-  //     // Check for common errors
-  //     if (error instanceof Error) {
-  //       errorMessage = error.message;
-  //     }
-
-  //     toast({
-  //       title: "Transaction failed",
-  //       description: errorMessage,
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
-
   const handleBuy = async () => {
+    if (!asset) return;
+    
     if (!buyAmount || Number(buyAmount) <= 0) {
       toast({
         title: "Invalid amount",
@@ -148,10 +162,31 @@ export default function AssetDetailPage() {
       return;
     }
 
-    if (asset.symbol !== "BART") {
+    // Check if contract is active
+    if (!asset.isContractActive) {
       toast({
-        title: "Unsupported token",
-        description: "Only BART purchases are supported at the moment",
+        title: "Contract not available",
+        description: "This asset's contract is still being deployed. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check minimum/maximum investment
+    const investmentAmount = Number(buyAmount) * asset.priceUsd;
+    if (investmentAmount < asset.minInvestment) {
+      toast({
+        title: "Amount too low",
+        description: `Minimum investment is $${asset.minInvestment.toFixed(2)}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (investmentAmount > asset.maxInvestment) {
+      toast({
+        title: "Amount too high",
+        description: `Maximum investment is $${asset.maxInvestment.toFixed(2)}`,
         variant: "destructive",
       });
       return;
@@ -159,8 +194,7 @@ export default function AssetDetailPage() {
 
     try {
       const amountInWei = parseEther(buyAmount);
-
-      const tokenAddress = "0x4aAAF8d89d5676Acf1b1Ec0755B92bA24ab24162" as const;
+      const tokenAddress = asset.contractAddress;
       const paymentTokenAddress = "0xD63029C1a3dA68b51c67c6D1DeC3DEe50D681661" as const;
 
       const txHash = await writeContractAsync({
@@ -179,7 +213,7 @@ export default function AssetDetailPage() {
           },
         ],
         functionName: "buyTokens",
-        args: [tokenAddress, amountInWei, paymentTokenAddress],
+        args: [tokenAddress as `0x${string}`, amountInWei, paymentTokenAddress],
       });
 
       toast({
@@ -208,16 +242,18 @@ export default function AssetDetailPage() {
 
   // Show success message when transaction is confirmed
   useEffect(() => {
-    if (isBuySuccess) {
+    if (isBuySuccess && asset) {
       toast({
         title: "Purchase successful!",
         description: `You have purchased ${buyAmount} ${asset.symbol}`,
       });
       setBuyAmount("");
     }
-  }, [isBuySuccess, buyAmount, asset.symbol, toast]);
+  }, [isBuySuccess, buyAmount, asset?.symbol, toast]);
 
   const handleStake = () => {
+    if (!asset) return;
+    
     // In a real app, this would call an API to stake the tokens
     console.log("Staking tokens:", stakeAmount);
 
@@ -233,6 +269,39 @@ export default function AssetDetailPage() {
       });
     }, 3000);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-12 px-4">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-400" />
+            <p className="text-gray-400">Loading asset details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !asset) {
+    return (
+      <div className="container mx-auto py-12 px-4">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-white text-xl mb-2">Asset not found</p>
+            <p className="text-gray-400 mb-4">{error || "The requested asset could not be loaded."}</p>
+            <Link href="/explore">
+              <Button className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700">
+                Browse Assets
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-12 px-4">
@@ -319,6 +388,18 @@ export default function AssetDetailPage() {
                       </div>
                     </div>
                     <div className="rounded-lg border border-gray-800 p-4">
+                      <div className="text-sm text-gray-400">Available Supply</div>
+                      <div className="text-lg font-medium text-white">
+                        {asset.availableSupply.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-gray-800 p-4">
+                      <div className="text-sm text-gray-400">Market Cap</div>
+                      <div className="text-lg font-medium text-white">
+                        ${asset.marketCap.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-gray-800 p-4">
                       <div className="text-sm text-gray-400">Total Staked</div>
                       <div className="text-lg font-medium text-white">
                         {asset.stakedAmount.toLocaleString()}
@@ -358,6 +439,7 @@ export default function AssetDetailPage() {
                       variant="outline"
                       size="sm"
                       className="border-purple-800"
+                      onClick={() => window.open(doc.url, '_blank')}
                     >
                       <Download className="mr-2 h-4 w-4" />
                       Download
@@ -388,23 +470,16 @@ export default function AssetDetailPage() {
                             {staker.address.slice(-4)}
                           </div>
                           <div className="text-sm text-gray-400">
-                            {staker.amount.toLocaleString()} IDRX
+                            {staker.amount.toLocaleString()} tokens
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-medium text-white">
-                          IDRX
-                          {(staker.amount * asset.priceUsd).toLocaleString(
-                            undefined,
-                            { maximumFractionDigits: 2 }
-                          )}
+                          ${(staker.amount * asset.priceUsd).toLocaleString()}
                         </div>
                         <div className="text-sm text-gray-400">
-                          {((staker.amount / asset.stakedAmount) * 100).toFixed(
-                            2
-                          )}
-                          % of total
+                          {staker.percentage}% of total
                         </div>
                       </div>
                     </div>
@@ -432,8 +507,7 @@ export default function AssetDetailPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">Available</span>
                   <span className="font-medium text-white">
-                    {(asset.totalSupply - asset.stakedAmount).toLocaleString()}{" "}
-                    {asset.symbol}
+                    {asset.availableSupply.toLocaleString()} {asset.symbol}
                   </span>
                 </div>
                 <Separator className="my-2 bg-gray-800" />
@@ -442,7 +516,15 @@ export default function AssetDetailPage() {
                     Minimum Purchase
                   </span>
                   <span className="font-medium text-white">
-                    10 {asset.symbol}
+                    ${asset.minInvestment.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">
+                    Contract Status
+                  </span>
+                  <span className={`font-medium ${asset.isContractActive ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {asset.isContractActive ? 'Active' : 'Pending'}
                   </span>
                 </div>
               </div>
@@ -460,6 +542,7 @@ export default function AssetDetailPage() {
                       value={buyAmount}
                       onChange={(e) => setBuyAmount(e.target.value)}
                       className="pr-16 border-purple-800 bg-black/60 text-white"
+                      disabled={!asset.isContractActive}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <span className="text-sm text-gray-400">{asset.symbol}</span>
