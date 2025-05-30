@@ -193,7 +193,7 @@ export default function ExplorePage() {
             <SheetContent className="border-purple-800 bg-black/95">
               <SheetHeader>
                 <SheetTitle>Filter Assets</SheetTitle>
-                    <SheetDescription>Adjust filters to find the assets you're looking for</SheetDescription>
+                    <SheetDescription>Adjust filters to find the assets you&#39;re looking for</SheetDescription>
               </SheetHeader>
               <div className="mt-6 space-y-6">
                 <div className="space-y-4">

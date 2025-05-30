@@ -23,7 +23,7 @@ import { parseEventLogs, parseEther } from "viem"
 export default function MintPage() {
   const { toast } = useToast()
   const { isConnected } = useAccount()
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
 
   // Enhanced state management for better UX

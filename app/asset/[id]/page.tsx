@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -127,7 +128,6 @@ export default function AssetDetailPage() {
   const [unlistAmount, setUnlistAmount] = useState("");
   const [listTxHash, setListTxHash] = useState<`0x${string}` | undefined>();
   const [isListing, setIsListing] = useState(false);
-  const [isBuying, setIsBuying] = useState(false);
 
   // IDRX Token Contract Address (you'll need to replace this with actual address)
   const IDRX_TOKEN_ADDRESS = "0xD63029C1a3dA68b51c67c6D1DeC3DEe50D681661" as const;
@@ -389,7 +389,7 @@ export default function AssetDetailPage() {
   }, [id, toast]);
 
   // Handle buy transaction confirmation
-  const { isLoading: isBuyLoading, isSuccess: isBuySuccess } =
+  const { isSuccess: isBuySuccess } =
     useWaitForTransactionReceipt({
       hash: buyTxHash,
     });
@@ -420,7 +420,7 @@ export default function AssetDetailPage() {
   }, [isBuySuccess, transactionState.type, buyAmount, asset?.symbol, toast, refreshAllData]);
 
   // Contract configuration
-  const launchpadAddress = process.env.NEXT_PUBLIC_CONTRACT_RWA_MARKETPLACE;
+  // const launchpadAddress = process.env.NEXT_PUBLIC_CONTRACT_RWA_MARKETPLACE;
 
   const handleBuy = async () => {
     if (!asset || !poolDetails) return;
@@ -707,23 +707,23 @@ export default function AssetDetailPage() {
         });
 
         // Step 1: Approve marketplace to spend tokens
-        const approveTxHash = await writeContractAsync({
-          address: tokenAddress as `0x${string}`,
-          abi: [
-            {
-              inputs: [
-                { internalType: "address", name: "spender", type: "address" },
-                { internalType: "uint256", name: "amount", type: "uint256" },
-              ],
-              name: "approve",
-              outputs: [{ internalType: "bool", name: "", type: "bool" }],
-              stateMutability: "nonpayable",
-              type: "function",
-            },
-          ],
-          functionName: "approve",
-          args: [wagmiContractMarketplaceConfig.address as `0x${string}`, listAmountBigInt],
-        });
+        // const approveTxHash = await writeContractAsync({
+        //   address: tokenAddress as `0x${string}`,
+        //   abi: [
+        //     {
+        //       inputs: [
+        //         { internalType: "address", name: "spender", type: "address" },
+        //         { internalType: "uint256", name: "amount", type: "uint256" },
+        //       ],
+        //       name: "approve",
+        //       outputs: [{ internalType: "bool", name: "", type: "bool" }],
+        //       stateMutability: "nonpayable",
+        //       type: "function",
+        //     },
+        //   ],
+        //   functionName: "approve",
+        //   args: [wagmiContractMarketplaceConfig.address as `0x${string}`, listAmountBigInt],
+        // });
 
         toast({
           title: "Approval submitted! ✅",
@@ -817,7 +817,7 @@ export default function AssetDetailPage() {
     // }
   };
 
-  const { isLoading: isListLoading, isSuccess: isListSuccess } =
+  const { isSuccess: isListSuccess } =
     useWaitForTransactionReceipt({
       hash: listTxHash,
     });

@@ -19,7 +19,7 @@ export const AuthConnectButton = (props: { className?: string }) => {
         console.error("signInWithXellar error:", err)
       );
     }
-  }, [isConnected, signInWithXellar]);
+  }, [address, isConnected, signInWithXellar]);
 
   return <ConnectButton {...props} />;
 };
