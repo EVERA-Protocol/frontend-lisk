@@ -28,7 +28,8 @@ export default function ExplorePage() {
       setIsLoading(true)
       setError(null)
       
-      const response = await fetch('http://localhost:8080/api/assets/')
+      // Replace line 31:
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_GO_URL || 'http://localhost:8080'}/api/assets/`)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch assets: ${response.status}`)

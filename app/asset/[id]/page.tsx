@@ -359,7 +359,7 @@ export default function AssetDetailPage() {
       setError(null);
       
       try {
-        const response = await fetch(`http://localhost:8080/api/assets/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_GO_URL || 'http://localhost:8080'}/api/assets/${id}`);
         
         if (!response.ok) {
           throw new Error(`Asset not found (${response.status})`);

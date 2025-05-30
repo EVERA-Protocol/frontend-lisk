@@ -102,7 +102,7 @@ export default function MintPage() {
       let savedAssetId: string | null = null;
       
       try {
-        const response = await fetch('http://localhost:8080/api/assets/mint', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_GO_URL || 'http://localhost:8080'}/api/assets/mint`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export default function MintPage() {
               setContractAddress(tokenAddress);
               
               // Step 3: Update backend with real contract address
-              const updateResponse = await fetch(`http://localhost:8080/api/assets/${savedAssetId}/contract`, {
+              const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_GO_URL || 'http://localhost:8080'}/api/assets/${savedAssetId}/contract`, {
                 method: 'PATCH',
                 headers: {
                   'Content-Type': 'application/json',
