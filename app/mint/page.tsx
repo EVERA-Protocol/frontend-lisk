@@ -3,7 +3,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,7 @@ import { wagmiContractLaunchpadConfig } from "@/services/contract"
 import { RWALaunchpadContract } from "@/services/contractAddress"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { TransactionSuccess } from "@/components/transaction-success"
-import { parseEventLogs } from "viem"
+import { parseEventLogs, parseEther } from "viem"
 
 export default function MintPage() {
   const { toast } = useToast()
@@ -26,6 +26,7 @@ export default function MintPage() {
   const { writeContractAsync, isPending } = useWriteContract();
   const publicClient = usePublicClient();
 
+  // Enhanced state management for better UX
   const [formData, setFormData] = useState<{
     name: string;
     symbol: string;
@@ -34,7 +35,7 @@ export default function MintPage() {
     supportingDocs: File | null;
     supportingImage: File | null;
     totalSupply: string;
-    pricePerRWA: string;
+    expectedYield: string;
     description: string;
   }>({
     name: "",
@@ -44,13 +45,31 @@ export default function MintPage() {
     supportingDocs: null,
     supportingImage: null,
     totalSupply: "",
-    pricePerRWA: "",
+    expectedYield: "",
     description: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // Enhanced loading and success states
+  const [mintingState, setMintingState] = useState<{
+    stage: 'idle' | 'uploading' | 'contract' | 'backend' | 'parsing' | 'success' | 'error';
+    message: string;
+    error?: string;
+  }>({
+    stage: 'idle',
+    message: ''
+  });
+
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [assetId, setAssetId] = useState<string | null>(null)
+  const [txHash, setTxHash] = useState<string | null>(null)
+  const [contractAddress, setContractAddress] = useState<string | null>(null)
+
+  // Show success modal when minting completes successfully
+  useEffect(() => {
+    if (mintingState.stage === 'success') {
+      setShowSuccessModal(true)
+    }
+  }, [mintingState.stage])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -67,10 +86,21 @@ export default function MintPage() {
 
   const executeContract = async (config: any, docsUrl?: string, imgUrl?: string) => {
     try {
-      const txHash = await writeContractAsync(config);
+      setMintingState({ stage: 'contract', message: 'Executing smart contract...' });
       
+      const txHash = await writeContractAsync(config);
+      setTxHash(txHash);
+      
+      toast({
+        title: "Transaction submitted! 🚀",
+        description: "Your transaction has been submitted to the blockchain.",
+        variant: "default",
+      });
+
       // Step 1: Save to backend with pending contract address
+      setMintingState({ stage: 'backend', message: 'Saving asset to backend...' });
       let savedAssetId: string | null = null;
+      
       try {
         const response = await fetch('http://localhost:8080/api/assets/mint', {
           method: 'POST',
@@ -84,7 +114,8 @@ export default function MintPage() {
             institutionAddress: formData.institutionAddress,
             description: formData.description,
             totalSupply: formData.totalSupply,
-            pricePerRWA: formData.pricePerRWA,
+            expectedYield: formData.expectedYield,
+            pricePerRWA: "1.0", // Default price per RWA token
             contractAddress: "pending", // Will be updated after parsing events
             txHash: txHash || "pending",
             documentsURI: docsUrl || "",
@@ -98,28 +129,29 @@ export default function MintPage() {
           setAssetId(savedAssetId);
           console.log('Asset saved to backend with ID:', savedAssetId);
         } else {
-          console.error('Failed to save asset to backend');
-          throw new Error('Backend save failed');
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Backend save failed');
         }
       } catch (backendError) {
         console.error('Backend API error:', backendError);
+        setMintingState({ 
+          stage: 'error', 
+          message: 'Asset creation failed', 
+          error: backendError instanceof Error ? backendError.message : 'Backend save failed' 
+        });
+        
         toast({
           title: "Warning: Transaction succeeded but asset not saved",
           description: "The blockchain transaction succeeded, but we couldn't save to our database.",
           variant: "destructive",
         });
-        setShowSuccessModal(true);
         return;
       }
 
       // Step 2: Wait for transaction receipt and parse events
       if (publicClient && txHash && savedAssetId) {
         try {
-          toast({
-            title: "Transaction submitted! 🚀",
-            description: "Waiting for confirmation and parsing contract address...",
-            variant: "default",
-          });
+          setMintingState({ stage: 'parsing', message: 'Waiting for blockchain confirmation...' });
 
           const receipt = await publicClient.waitForTransactionReceipt({ 
             hash: txHash as `0x${string}` 
@@ -134,10 +166,11 @@ export default function MintPage() {
 
           if (logs && logs.length > 0) {
             const event = logs[0];
-            // Type assertion for the event args
             const tokenAddress = (event as any).args?.tokenAddress;
             
             if (tokenAddress) {
+              setContractAddress(tokenAddress);
+              
               // Step 3: Update backend with real contract address
               const updateResponse = await fetch(`http://localhost:8080/api/assets/${savedAssetId}/contract`, {
                 method: 'PATCH',
@@ -152,6 +185,11 @@ export default function MintPage() {
 
               if (updateResponse.ok) {
                 console.log('Contract address updated successfully:', tokenAddress);
+                setMintingState({ 
+                  stage: 'success', 
+                  message: 'Asset minted successfully!' 
+                });
+                
                 toast({
                   title: "Asset minted successfully! 🎉",
                   description: `Token contract deployed at ${tokenAddress.slice(0, 10)}...`,
@@ -159,6 +197,12 @@ export default function MintPage() {
                 });
               } else {
                 console.error('Failed to update contract address');
+                setMintingState({ 
+                  stage: 'error', 
+                  message: 'Contract address update failed', 
+                  error: 'Could not update contract address in backend' 
+                });
+                
                 toast({
                   title: "Warning: Contract address not updated",
                   description: "Asset was saved but contract address is still pending.",
@@ -167,6 +211,12 @@ export default function MintPage() {
               }
             } else {
               console.error('Token address not found in event logs');
+              setMintingState({ 
+                stage: 'error', 
+                message: 'Contract address not found', 
+                error: 'Could not parse contract address from transaction' 
+              });
+              
               toast({
                 title: "Warning: Contract address not found",
                 description: "Asset was saved but contract address could not be parsed.",
@@ -175,6 +225,12 @@ export default function MintPage() {
             }
           } else {
             console.error('RWATokenCreated event not found in transaction logs');
+            setMintingState({ 
+              stage: 'error', 
+              message: 'Event not found', 
+              error: 'RWATokenCreated event not found in transaction logs' 
+            });
+            
             toast({
               title: "Warning: Event not found",
               description: "Asset was saved but event parsing failed.",
@@ -183,6 +239,12 @@ export default function MintPage() {
           }
         } catch (eventParsingError) {
           console.error('Error parsing transaction events:', eventParsingError);
+          setMintingState({ 
+            stage: 'error', 
+            message: 'Event parsing failed', 
+            error: eventParsingError instanceof Error ? eventParsingError.message : 'Unknown error during event parsing' 
+          });
+          
           toast({
             title: "Warning: Event parsing failed",
             description: "Asset was saved but we couldn't parse the contract address.",
@@ -190,25 +252,42 @@ export default function MintPage() {
           });
         }
       }
-      
-      setShowSuccessModal(true)
     } catch (error: any) {
       console.error("Error creating RWA token:", error)
+      
+      let errorMessage = "An unknown error occurred";
+      if (error.message) {
+        if (error.message.includes("User rejected")) {
+          errorMessage = "Transaction was cancelled by user";
+        } else if (error.message.includes("insufficient funds")) {
+          errorMessage = "Insufficient funds for transaction";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setMintingState({ 
+        stage: 'error', 
+        message: 'Transaction failed', 
+        error: errorMessage 
+      });
+      
       toast({
         title: "Error creating RWA token",
-        description: error.message || "An unknown error occurred",
+        description: errorMessage,
         variant: "destructive",
       })
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
 
   const handleSubmit = async (e: React.FormEvent) => {
-    setIsSubmitting(true)
     e.preventDefault()
     console.log("Form submitted:", formData)
+
+    try {
+      // Step 1: Upload files
+      setMintingState({ stage: 'uploading', message: 'Uploading supporting documents...' });
 
     const docs = new FormData();
     if (formData.supportingDocs) docs.set("file", formData.supportingDocs);
@@ -218,7 +297,13 @@ export default function MintPage() {
       body: docs,
     });
 
+      if (!uploadRequestDocs.ok) {
+        throw new Error('Failed to upload documents');
+      }
+
     const docsUrl = await uploadRequestDocs.json();
+
+      setMintingState({ stage: 'uploading', message: 'Uploading supporting images...' });
 
     const img = new FormData();
     if (formData.supportingImage) img.set("file", formData.supportingImage);
@@ -228,19 +313,48 @@ export default function MintPage() {
       body: img,
     });
 
+      if (!uploadRequestImg.ok) {
+        throw new Error('Failed to upload images');
+      }
+
     const imgUrl = await uploadRequestImg.json();
+
+      // Convert user input to 18-decimal format for blockchain
+      const totalSupplyWithDecimals = parseEther(formData.totalSupply);
+      const expectedYieldWithDecimals = parseEther(formData.expectedYield);
+
+      setMintingState({ stage: 'contract', message: 'Preparing contract execution...' });
 
     executeContract({
       ...wagmiContractLaunchpadConfig,
       functionName: 'createRWAToken',
-      args: [formData.name, formData.symbol, formData.institutionName, formData.institutionAddress, docsUrl, imgUrl, BigInt(formData.totalSupply), BigInt(formData.pricePerRWA), formData.description],
-    }, docsUrl, imgUrl)
+        args: [
+          formData.name, 
+          formData.symbol, 
+          formData.institutionName, 
+          formData.institutionAddress, 
+          docsUrl, 
+          imgUrl, 
+          totalSupplyWithDecimals, 
+          expectedYieldWithDecimals, 
+          formData.description
+        ],
+      }, docsUrl, imgUrl)
 
-    // Simulate successful submission
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      setMintingState({ 
+        stage: 'error', 
+        message: 'Submission failed', 
+        error: error instanceof Error ? error.message : 'Unknown error during submission' 
+      });
+      
     toast({
-      title: "Mint request successfully submitted",
-      description: "Our team will review your request within 24-48 hours.",
-    })
+        title: "Error submitting form",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
   }
 
   const resetForm = () => {
@@ -252,13 +366,17 @@ export default function MintPage() {
       supportingDocs: null,
       supportingImage: null,
       totalSupply: "",
-      pricePerRWA: "",
+      expectedYield: "",
       description: "",
     })
   }
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false)
+    setMintingState({ stage: 'idle', message: '' })
+    setTxHash(null)
+    setContractAddress(null)
+    setAssetId(null)
     resetForm()
   }
 
@@ -370,25 +488,25 @@ export default function MintPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="pricePerRWA">Price per RWA (IDR)</Label>
+                    <Label htmlFor="expectedYield">Expected Yield</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Info className="h-4 w-4 text-gray-500" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p className="w-80">Initial price per token in IDR</p>
+                          <p className="w-80">Expected annual yield percentage for token holders</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
                   <Input
-                    id="pricePerRWA"
-                    name="pricePerRWA"
+                    id="expectedYield"
+                    name="expectedYield"
                     type="number"
                     step="0.01"
-                    placeholder="Example: 1.00"
-                    value={formData.pricePerRWA}
+                    placeholder="Example: 8.50 (for 8.5% annual yield)"
+                    value={formData.expectedYield}
                     onChange={handleChange}
                     className="border-purple-800 bg-black/60"
                     required
@@ -410,14 +528,62 @@ export default function MintPage() {
               </div>
 
               <div className="pt-4">
+                {/* Progress indicator */}
+                {mintingState.stage !== 'idle' && mintingState.stage !== 'error' && (
+                  <div className="mb-4 rounded-lg bg-purple-900/20 p-4">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+                      <div>
+                        <div className="font-medium text-white">
+                          {mintingState.stage === 'uploading' && 'Uploading Files...'}
+                          {mintingState.stage === 'contract' && 'Executing Contract...'}
+                          {mintingState.stage === 'backend' && 'Saving Asset...'}
+                          {mintingState.stage === 'parsing' && 'Confirming Transaction...'}
+                          {mintingState.stage === 'success' && 'Completed Successfully!'}
+                        </div>
+                        <div className="text-sm text-gray-400">{mintingState.message}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error indicator */}
+                {mintingState.stage === 'error' && (
+                  <div className="mb-4 rounded-lg bg-red-900/20 p-4 border border-red-800">
+                    <div className="flex items-center gap-3">
+                      <div className="h-5 w-5 rounded-full bg-red-500 flex-shrink-0"></div>
+                      <div>
+                        <div className="font-medium text-red-400">{mintingState.message}</div>
+                        {mintingState.error && (
+                          <div className="text-sm text-red-300 mt-1">{mintingState.error}</div>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => setMintingState({ stage: 'idle', message: '' })}
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 border-red-800 text-red-400 hover:bg-red-900/30"
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700"
-                  disabled={isSubmitting || isPending || !isConnected}
+                  disabled={mintingState.stage !== 'idle' || !isConnected}
                 >
-                  {(isSubmitting || isPending) ? (
+                  {mintingState.stage !== 'idle' ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {mintingState.stage === 'uploading' && 'Uploading...'}
+                      {mintingState.stage === 'contract' && 'Processing Contract...'}
+                      {mintingState.stage === 'backend' && 'Saving...'}
+                      {mintingState.stage === 'parsing' && 'Confirming...'}
+                      {mintingState.stage === 'success' && 'Completed!'}
+                      {mintingState.stage === 'error' && 'Failed'}
                     </>
                   ) : (
                     <>
@@ -453,18 +619,30 @@ export default function MintPage() {
           <div className="mt-2 space-y-4">
             <div className="rounded-lg bg-purple-900/30 p-4">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm text-gray-400">Request ID</span>
-                <span className="font-mono text-sm text-white">RWA001</span>
+                <span className="text-sm text-gray-400">Asset ID</span>
+                <span className="font-mono text-sm text-white">{assetId || 'N/A'}</span>
               </div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-gray-400">Token Symbol</span>
                 <span className="font-mono text-sm text-white">{formData.symbol}</span>
               </div>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm text-gray-400">Transaction Hash</span>
+                <span className="font-mono text-sm text-white">
+                  {txHash ? `${txHash.slice(0, 10)}...${txHash.slice(-6)}` : 'N/A'}
+                </span>
+              </div>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm text-gray-400">Contract Address</span>
+                <span className="font-mono text-sm text-white">
+                  {contractAddress ? `${contractAddress.slice(0, 10)}...${contractAddress.slice(-6)}` : 'Pending'}
+                </span>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-400">Status</span>
-                <span className="flex items-center text-sm text-yellow-400">
-                  <span className="mr-1 h-2 w-2 rounded-full bg-yellow-400"></span>
-                  Pending Review
+                <span className="flex items-center text-sm text-green-400">
+                  <span className="mr-1 h-2 w-2 rounded-full bg-green-400"></span>
+                  {mintingState.stage === 'success' ? 'Completed' : 'Processing'}
                 </span>
               </div>
             </div>
@@ -479,9 +657,12 @@ export default function MintPage() {
               </Button>
               <Button
                 className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700"
-                onClick={handleCloseSuccessModal}
+                onClick={() => {
+                  handleCloseSuccessModal()
+                  window.open('/explore', '_self')
+                }}
               >
-                View Dashboard <ExternalLink className="ml-2 h-4 w-4" />
+                View Asset <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
